@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civic Pulse — report it, rank it, fix it faster</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+:root{
+  --asphalt:#24262A;
+  --paper:#EFEAE1;
+  --safety:#F3B900;
+  --route-blue:#2F5D8A;
+  --alert-rust:#C1502E;
+  --moss:#4C7A4C;
+  --ink:#1B1B1B;
+  --line:#D3CCBC;
+  --paper-raised:#F7F3EC;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;line-height:1.55;}
+h1,h2,h3{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:0.01em;margin:0;color:var(--asphalt);}
+p{margin:0;}
+a{color:inherit;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+:focus-visible{outline:3px solid var(--route-blue);outline-offset:2px;}
+
+/* TITLE SCREEN */
+#titleScreen{
+  position:fixed;inset:0;z-index:100;
+  background:var(--asphalt);
+  background-image:repeating-linear-gradient(115deg, transparent 0 46px, rgba(239,234,225,0.035) 46px 48px);
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 28px;
+  transition:opacity 0.45s ease, visibility 0.45s ease;
+}
+#titleScreen.hidden{opacity:0;visibility:hidden;}
+body.locked{overflow:hidden;}
+.title-inner{max-width:620px;width:100%;text-align:left;}
+.title-mark svg{width:46px;height:46px;margin-bottom:26px;}
+.title-eyebrow{
+  font-family:'IBM Plex Mono',monospace;font-size:0.76rem;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--safety);margin-bottom:10px;
+}
+.title-name{
+  font-family:'Oswald',sans-serif;font-weight:700;
+  font-size:clamp(2.8rem,8vw,4.6rem);line-height:1;
+  color:var(--paper);letter-spacing:0.02em;
+}
+.title-tagline{
+  margin-top:14px;font-size:1.02rem;color:#BDB6A8;max-width:42ch;
+}
+.title-rule{height:3px;background:var(--safety);width:76px;margin:32px 0;}
+.title-details{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:22px;
+  border-top:1px solid rgba(239,234,225,0.22);
+  border-bottom:1px solid rgba(239,234,225,0.22);
+  padding:22px 0;
+}
+.td-item span{
+  display:block;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;
+  letter-spacing:0.1em;text-transform:uppercase;color:#8E877A;margin-bottom:5px;
+}
+.td-item b{font-family:'Oswald',sans-serif;font-weight:600;font-size:1.08rem;color:var(--paper);letter-spacing:0.01em;}
+.title-enter{
+  margin-top:36px;background:var(--safety);border:2px solid var(--safety);color:var(--asphalt);
+  padding:13px 30px;font-family:'Oswald',sans-serif;font-weight:600;font-size:1rem;letter-spacing:0.03em;
+}
+.title-enter:hover{background:transparent;color:var(--safety);}
+.title-enter:focus-visible{outline:3px solid var(--paper);outline-offset:3px;}
+
+/* HEADER */
+header{border-bottom:2px solid var(--asphalt);background:var(--paper);position:sticky;top:0;z-index:30;}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;max-width:1080px;margin:0 auto;flex-wrap:wrap;gap:12px;}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:none;padding:0;}
+.brand svg{width:30px;height:30px;flex:none;}
+.brand-name{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:0.02em;color:var(--asphalt);}
+nav{display:flex;gap:8px;font-size:0.92rem;flex-wrap:wrap;}
+.nav-link{text-decoration:none;border:1.5px solid transparent;padding:7px 12px;background:none;color:var(--ink);}
+.nav-link:hover{border-color:var(--line);}
+.nav-link.active{background:var(--asphalt);color:var(--paper);}
+
+/* VIEWS */
+.view{display:none;}
+.view.active{display:block;}
+
+/* HERO */
+.hero{border-bottom:2px solid var(--asphalt);background:repeating-linear-gradient(115deg, transparent 0 38px, rgba(36,38,42,0.035) 38px 40px);}
+.hero-inner{max-width:1080px;margin:0 auto;padding:64px 28px 56px;display:grid;grid-template-columns:1.25fr 0.9fr;gap:48px;align-items:start;}
+.hero h1{font-size:clamp(2.1rem,4.2vw,3.15rem);line-height:1.08;}
+.hero .lede{margin-top:18px;font-size:1.06rem;max-width:46ch;color:#3A3A3A;}
+.hero-stats{display:flex;gap:0;margin-top:30px;border-top:1px solid var(--asphalt);border-bottom:1px solid var(--asphalt);}
+.stat{flex:1;padding:14px 16px 14px 0;border-right:1px solid var(--line);}
+.stat:last-child{border-right:none;}
+.stat b{display:block;font-family:'Oswald',sans-serif;font-size:1.5rem;color:var(--asphalt);}
+.stat span{font-size:0.82rem;color:#5A5A5A;}
+.hero-ctas{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;}
+
+.ticket-preview{background:var(--paper-raised);border:2px solid var(--asphalt);padding:20px 20px 18px;position:relative;transform:rotate(1.2deg);box-shadow:6px 6px 0 rgba(36,38,42,0.12);}
+.ticket-preview::before{content:"SAMPLE";position:absolute;top:14px;right:-34px;background:var(--safety);color:var(--asphalt);font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;padding:3px 38px;transform:rotate(35deg);letter-spacing:0.08em;}
+.ticket-preview .tp-id{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:#6B6B6B;}
+.ticket-preview h3{font-size:1.15rem;margin-top:6px;}
+.ticket-preview .tp-meta{margin-top:10px;font-size:0.86rem;color:#4A4A4A;display:flex;gap:14px;flex-wrap:wrap;}
+.tp-badge{display:inline-block;margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;font-weight:600;padding:5px 10px;background:var(--alert-rust);color:var(--paper);}
+
+/* GENERIC BUTTONS */
+.btn-primary{background:var(--safety);border:2px solid var(--asphalt);color:var(--asphalt);padding:12px 24px;font-weight:600;font-family:'Oswald',sans-serif;letter-spacing:0.02em;font-size:0.95rem;}
+.btn-primary:hover{background:var(--asphalt);color:var(--paper);}
+.btn-secondary{background:none;border:2px solid var(--asphalt);color:var(--asphalt);padding:12px 24px;font-weight:600;font-family:'Oswald',sans-serif;letter-spacing:0.02em;font-size:0.95rem;}
+.btn-secondary:hover{background:var(--asphalt);color:var(--paper);}
+.btn-small{border:1.5px solid var(--asphalt);background:var(--paper);padding:6px 11px;font-size:0.78rem;font-family:'IBM Plex Mono',monospace;}
+.btn-small:hover{background:var(--asphalt);color:var(--paper);}
+.btn-danger{border-color:var(--alert-rust);color:var(--alert-rust);}
+.btn-danger:hover{background:var(--alert-rust);color:var(--paper);}
+
+/* SECTIONS */
+section{padding:56px 0;border-bottom:2px solid var(--asphalt);}
+.view > section:last-of-type{border-bottom:none;}
+.section-head{max-width:60ch;margin-bottom:32px;}
+.section-head h2{font-size:1.8rem;}
+.section-head p{margin-top:10px;color:#4A4A4A;}
+
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;}
+.problem-grid h3{font-size:1.05rem;margin-bottom:8px;}
+.problem-grid p{color:#3A3A3A;font-size:0.95rem;}
+
+.how-list{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+.how-list h3{font-size:1rem;margin-bottom:8px;}
+.how-list p{font-size:0.9rem;color:#4A4A4A;}
+
+/* LOGIN CARDS */
+.login-wrap{padding:70px 0;}
+.login-card{max-width:420px;margin:0 auto;border:2px solid var(--asphalt);background:var(--paper-raised);padding:34px 30px;}
+.login-card h2{font-size:1.4rem;margin-bottom:8px;}
+.login-card p{color:#4A4A4A;font-size:0.9rem;margin-bottom:22px;}
+.login-card label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;color:var(--asphalt);}
+.login-card input,.login-card select{width:100%;padding:10px 12px;border:1.5px solid var(--asphalt);background:var(--paper);font-size:0.95rem;margin-bottom:16px;}
+.login-note{font-size:0.76rem;color:#8A8A8A;margin-top:16px;}
+
+/* FORM */
+.form-card{background:var(--paper-raised);border:2px solid var(--asphalt);padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.form-card .full{grid-column:1/-1;}
+label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;color:var(--asphalt);}
+input[type=text], textarea, select{width:100%;padding:10px 12px;border:1.5px solid var(--asphalt);background:var(--paper);font-size:0.95rem;color:var(--ink);}
+textarea{resize:vertical;min-height:78px;}
+.file-fake{border:1.5px dashed var(--asphalt);padding:10px 12px;font-size:0.88rem;color:#5A5A5A;background:var(--paper);display:flex;justify-content:space-between;align-items:center;}
+.file-fake input{display:none;}
+.file-fake button{background:var(--asphalt);color:var(--paper);border:none;padding:6px 12px;font-size:0.8rem;}
+.submit-row{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin-top:4px;}
+#formMsg,#adminFormMsg{font-size:0.88rem;color:var(--route-blue);min-height:1.2em;}
+
+/* BOARD / LEDGER */
+.board-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px;}
+.filters{display:flex;gap:8px;flex-wrap:wrap;}
+.filters button{background:none;border:1.5px solid var(--asphalt);padding:7px 14px;font-size:0.82rem;font-family:'IBM Plex Mono',monospace;color:var(--asphalt);}
+.filters button.active{background:var(--asphalt);color:var(--paper);}
+.sort-note{font-size:0.8rem;color:#6B6B6B;font-style:italic;}
+.ledger{border-top:2px solid var(--asphalt);}
+.row{display:grid;grid-template-columns:88px 1fr 130px 110px;gap:16px;align-items:center;padding:16px 4px;border-bottom:1px solid var(--line);border-left:6px solid var(--line);}
+.row .id{font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:#6B6B6B;}
+.row .desc h4{font-size:0.98rem;margin-bottom:4px;font-weight:600;}
+.row .desc p{font-size:0.84rem;color:#5A5A5A;}
+.row .cat{font-size:0.8rem;color:var(--route-blue);font-weight:600;margin-top:4px;display:block;}
+.priority-badge{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;font-weight:600;padding:5px 9px;display:inline-block;width:fit-content;}
+.p-critical{background:var(--alert-rust);color:var(--paper);}
+.p-high{background:var(--safety);color:var(--asphalt);}
+.p-medium{background:var(--route-blue);color:var(--paper);}
+.p-low{background:none;border:1.5px solid var(--line);color:#6B6B6B;}
+.score-note{font-size:0.72rem;color:#8A8A8A;margin-top:4px;}
+.upvote{background:none;border:1.5px solid var(--asphalt);padding:7px 10px;font-size:0.82rem;display:flex;gap:6px;align-items:center;font-family:'IBM Plex Mono',monospace;}
+.upvote:hover{background:var(--asphalt);color:var(--paper);}
+
+/* PORTAL */
+.portal-topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px;}
+.portal-greeting{font-size:1rem;color:#4A4A4A;}
+.portal-greeting b{color:var(--asphalt);}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0 8px;}
+.stat-card{border:1.5px solid var(--asphalt);padding:16px 18px;background:var(--paper-raised);}
+.stat-card b{display:block;font-family:'Oswald',sans-serif;font-size:1.7rem;color:var(--asphalt);}
+.stat-card span{font-size:0.8rem;color:#5A5A5A;}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.badge-chip{border:1.5px solid var(--moss);color:var(--moss);padding:5px 11px;font-size:0.78rem;font-family:'IBM Plex Mono',monospace;}
+.notif-list{margin-top:14px;}
+.notif-item{padding:10px 0;border-bottom:1px solid var(--line);font-size:0.88rem;color:#3A3A3A;}
+.notif-item:last-child{border-bottom:none;}
+.leader-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:0.9rem;}
+.leader-row:last-child{border-bottom:none;}
+.leader-row.me{background:rgba(243,185,0,0.18);padding:10px 8px;}
+.leader-rank{font-family:'IBM Plex Mono',monospace;color:#6B6B6B;width:28px;display:inline-block;}
+.leader-points{font-family:'IBM Plex Mono',monospace;color:var(--route-blue);}
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin:30px 0 18px;border-bottom:2px solid var(--asphalt);}
+.subtab{background:none;border:none;padding:10px 16px;font-size:0.88rem;font-family:'Oswald',sans-serif;font-weight:600;color:#6B6B6B;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.subtab.active{color:var(--asphalt);border-bottom-color:var(--safety);}
+.subpanel{display:none;}
+.subpanel.active{display:block;}
+
+/* ADMIN */
+.admin-topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-label{width:110px;font-size:0.84rem;color:#4A4A4A;flex:none;}
+.bar-track{flex:1;height:14px;background:var(--paper);border:1px solid var(--line);}
+.bar-fill{height:100%;background:var(--route-blue);}
+.bar-count{width:26px;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:#6B6B6B;text-align:right;}
+.zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+.zone-tile{border:1.5px solid var(--asphalt);padding:12px;}
+.zone-tile b{display:block;font-family:'Oswald',sans-serif;font-size:1.3rem;}
+.zone-tile span{font-size:0.76rem;}
+.admin-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:26px 0 18px;}
+.admin-controls input,.admin-controls select{padding:8px 10px;border:1.5px solid var(--asphalt);background:var(--paper);font-size:0.85rem;}
+.admin-card{border:1.5px solid var(--asphalt);border-left:6px solid var(--line);padding:16px 18px;margin-bottom:14px;background:var(--paper-raised);}
+.admin-card-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;}
+.admin-card-head h4{font-size:1rem;font-weight:600;}
+.admin-card-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px;font-size:0.85rem;}
+.admin-card-meta div span{display:block;font-size:0.72rem;color:#8A8A8A;}
+.admin-card-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+.admin-card-actions select{padding:6px 8px;border:1.5px solid var(--asphalt);background:var(--paper);font-size:0.8rem;}
+.note-box{margin-top:12px;display:none;}
+.note-box.open{display:block;}
+.note-box textarea{width:100%;min-height:54px;border:1.5px solid var(--asphalt);padding:8px;font-size:0.85rem;}
+.note-list{margin-top:10px;font-size:0.82rem;color:#4A4A4A;}
+.note-list div{padding:6px 0;border-top:1px solid var(--line);}
+.activity-panel{border:1.5px solid var(--asphalt);background:var(--paper-raised);padding:18px 20px;margin-top:32px;}
+.activity-panel h3{font-size:1rem;margin-bottom:12px;}
+.activity-item{font-size:0.84rem;color:#4A4A4A;padding:7px 0;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace;}
+.activity-item:last-child{border-bottom:none;}
+
+footer{padding:34px 0;text-align:left;}
+footer p{font-size:0.85rem;color:#6B6B6B;}
+
+@media (max-width:760px){
+  .hero-inner{grid-template-columns:1fr;}
+  .problem-grid{grid-template-columns:1fr;}
+  .form-card{grid-template-columns:1fr;}
+  .row{grid-template-columns:1fr;text-align:left;border-left-width:4px;}
+  .how-list{grid-template-columns:1fr;}
+  .hero-stats{flex-wrap:wrap;}
+  .stat{flex:1 1 45%;border-bottom:1px solid var(--line);}
+  .stat-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ TITLE SCREEN ============ -->
+<div id="titleScreen">
+  <div class="title-inner">
+    <div class="title-mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 20 L9 6 L12 13 L15 6 L21 20" stroke="#EFEAE1" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="12" cy="13" r="1.6" fill="#F3B900" stroke="#EFEAE1" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <p class="title-eyebrow">Mini Project Presentation</p>
+    <h1 class="title-name">CIVIC PULSE</h1>
+    <p class="title-tagline">An AI-assisted civic issue reporting &amp; triage platform</p>
+
+    <div class="title-rule"></div>
+
+    <div class="title-details">
+      <div class="td-item">
+        <span>Submitted by</span>
+        <b>K. Fayas Ahamed</b>
+      </div>
+      <div class="td-item">
+        <span>Register Number</span>
+        <b>25110048</b>
+      </div>
+      <div class="td-item">
+        <span>Department</span>
+        <b>B.E. CSE (AI &amp; ML)</b>
+      </div>
+    </div>
+
+    <button class="title-enter" onclick="enterSite()">Enter platform →</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <button class="brand" onclick="showView('home')">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 20 L9 6 L12 13 L15 6 L21 20" stroke="#24262A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="12" cy="13" r="1.6" fill="#F3B900" stroke="#24262A" stroke-width="1"/>
+      </svg>
+      <span class="brand-name">CIVIC PULSE</span>
+    </button>
+    <nav>
+      <button class="nav-link active" data-view="home" onclick="showView('home')">Home</button>
+      <button class="nav-link" data-view="portal" onclick="showView('portal')">Citizen Portal</button>
+      <button class="nav-link" data-view="admin" onclick="showView('admin')">Admin Panel</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HOME VIEW ============ -->
+<div class="view active" id="view-home">
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <h1>Every pothole starts as somebody's complaint.</h1>
+        <p class="lede">Most civic issues die in a phone queue: no reference number, no tracking, no way for a municipal team to tell a burst pipe from a chipped kerb. Civic Pulse gives residents a five-minute report form and a running score, and gives the people fixing things a triaged, de-duplicated work order board.</p>
+        <div class="hero-stats">
+          <div class="stat"><b>1 in 3</b><span>civic complaints in Indian cities go unresolved past 30 days</span></div>
+          <div class="stat"><b>~40%</b><span>of helpline reports are duplicates of an existing issue</span></div>
+          <div class="stat"><b>0</b><span>tracking numbers given to callers on most local helplines</span></div>
+        </div>
+        <div class="hero-ctas">
+          <button class="btn-primary" onclick="showView('portal')">File a report</button>
+          <button class="btn-secondary" onclick="showView('admin')">Staff sign-in</button>
+        </div>
+      </div>
+      <div class="ticket-preview">
+        <span class="tp-id">WO-0192 · filed 6 min ago</span>
+        <h3>Exposed live wire near bus stop</h3>
+        <p class="tp-meta"><span>📍 Anna Nagar, 4th Ave</span><span>🏷 Streetlight</span></p>
+        <span class="tp-badge">CRITICAL · score 91</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>The gap between reporting and fixing</h2>
+        <p>Two separate failures compound each other, and a single form can't fix either on its own.</p>
+      </div>
+      <div class="problem-grid">
+        <div>
+          <h3>Residents have no reliable channel</h3>
+          <p>Calls go to busy lines, complaints get logged on paper registers or scattered social posts, and there's no ticket number to follow up with — so people stop reporting altogether.</p>
+        </div>
+        <div>
+          <h3>Municipal teams can't prioritise</h3>
+          <p>Even where reports do arrive, staff see them in the order they land, not in order of risk. A cosmetic garbage complaint can sit ahead of a live wire near a school simply because it came in first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>How the urgency score works</h2>
+        <p>A lightweight, explainable heuristic — the kind of thing that would be swapped for a trained classifier once real report data exists.</p>
+      </div>
+      <div class="how-list">
+        <div><h3>Category weight</h3><p>Each category starts with a base risk score — a water leak or exposed wire starts higher than a garbage complaint, reflecting typical safety impact.</p></div>
+        <div><h3>Risk language</h3><p>The description is scanned for terms like "accident", "school", "children" or "exposed wire" — each one raises the score, the way a triage nurse weighs a patient's own words.</p></div>
+        <div><h3>Duplicate clustering</h3><p>New reports are compared against open issues in the same category. A close match adds a corroborating vote to the existing ticket instead of creating a new one.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer><div class="wrap"><p>Civic Pulse — hackathon prototype. Built as a demonstration of AI-assisted civic issue triage; no data leaves your browser.</p></div></footer>
+</div>
+
+<!-- ============ PORTAL VIEW ============ -->
+<div class="view" id="view-portal">
+
+  <div class="login-wrap" id="portalLogin">
+    <div class="wrap">
+      <div class="login-card">
+        <h2>Citizen sign-in</h2>
+        <p>Just your name — no password. This is a hackathon prototype, so your session lives only in this browser tab.</p>
+        <label for="citizenName">Your name</label>
+        <input type="text" id="citizenName" placeholder="e.g. Priya R.">
+        <button class="btn-primary" style="width:100%;" onclick="citizenLogin()">Continue to portal</button>
+        <p class="login-note">Tip: try "Priya R." to see an account with existing reports and points already on it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="portalDashboard" style="display:none;">
+    <section>
+      <div class="wrap">
+        <div class="portal-topbar">
+          <p class="portal-greeting">Signed in as <b id="portalName"></b></p>
+          <button class="btn-small" onclick="citizenLogout()">Sign out</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card"><b id="statMyReports">0</b><span>Reports you've filed</span></div>
+          <div class="stat-card"><b id="statMyUpvotes">0</b><span>Corroborations received</span></div>
+          <div class="stat-card"><b id="statMyRank">—</b><span>Leaderboard rank</span></div>
+        </div>
+        <div class="badge-row" id="badgeRow"></div>
+
+        <div class="subtabs">
+          <button class="subtab active" data-sub="report" onclick="showSubtab('portal','report')">File a report</button>
+          <button class="subtab" data-sub="mine" onclick="showSubtab('portal','mine')">My reports</button>
+          <button class="subtab" data-sub="community" onclick="showSubtab('portal','community')">Community board</button>
+          <button class="subtab" data-sub="leaderboard" onclick="showSubtab('portal','leaderboard')">Leaderboard</button>
+          <button class="subtab" data-sub="notifications" onclick="showSubtab('portal','notifications')">Notifications</button>
+        </div>
+
+        <div class="subpanel active" id="portal-report">
+          <form class="form-card" id="reportForm">
+            <div>
+              <label for="category">Category</label>
+              <select id="category">
+                <option>Pothole</option><option>Water Leak</option><option>Streetlight</option><option>Garbage</option><option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="e.g. 4th Avenue, Anna Nagar">
+            </div>
+            <div class="full">
+              <label for="description">Describe the issue</label>
+              <textarea id="description" placeholder="What's wrong, and why does it matter? Mention if it's near a school, hospital, or has already caused an incident."></textarea>
+            </div>
+            <div class="full">
+              <label>Photo (optional)</label>
+              <div class="file-fake">
+                <span id="fileLabel">No file attached</span>
+                <button type="button" id="fileBtn">Attach</button>
+                <input type="file" id="fileInput">
+              </div>
+            </div>
+            <div class="submit-row">
+              <button type="submit" class="btn-primary">Submit work order</button>
+              <span id="formMsg"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="subpanel" id="portal-mine">
+          <div class="ledger" id="myLedger"></div>
+        </div>
+
+        <div class="subpanel" id="portal-community">
+          <div class="board-controls">
+            <div class="filters" id="filters">
+              <button data-f="all" class="active">All</button>
+              <button data-f="critical">Critical</button>
+              <button data-f="high">High</button>
+              <button data-f="medium">Medium</button>
+              <button data-f="low">Low</button>
+            </div>
+            <span class="sort-note">sorted by urgency score</span>
+          </div>
+          <div class="ledger" id="ledger"></div>
+        </div>
+
+        <div class="subpanel" id="portal-leaderboard">
+          <div id="leaderboardList"></div>
+        </div>
+
+        <div class="subpanel" id="portal-notifications">
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div class="view" id="view-admin">
+
+  <div class="login-wrap" id="adminLoginWrap">
+    <div class="wrap">
+      <div class="login-card">
+        <h2>Staff sign-in</h2>
+        <p>Enter your name and department. In production this would sit behind real municipal authentication — here it's name-only, same as the citizen side.</p>
+        <label for="adminName">Staff name</label>
+        <input type="text" id="adminName" placeholder="e.g. R. Ganesan">
+        <label for="adminDept">Department</label>
+        <select id="adminDept">
+          <option>Roads</option><option>Water</option><option>Electrical</option><option>Sanitation</option><option>General Administration</option>
+        </select>
+        <button class="btn-primary" style="width:100%;" onclick="adminLogin()">Enter admin panel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminDashboard" style="display:none;">
+    <section>
+      <div class="wrap">
+        <div class="admin-topbar">
+          <p class="portal-greeting">Signed in as <b id="adminNameLabel"></b> · <span id="adminDeptLabel"></span></p>
+          <button class="btn-small" onclick="adminLogout()">Sign out</button>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card"><b id="admStatOpen">0</b><span>Open work orders</span></div>
+          <div class="stat-card"><b id="admStatCritical">0</b><span>Currently critical</span></div>
+          <div class="stat-card"><b id="admStatResolved">0</b><span>Resolved</span></div>
+        </div>
+
+        <div class="section-head" style="margin-top:34px;">
+          <h2 style="font-size:1.3rem;">Open issues by category</h2>
+        </div>
+        <div id="categoryBars"></div>
+
+        <div class="section-head" style="margin-top:34px;">
+          <h2 style="font-size:1.3rem;">Reports by area</h2>
+          <p>Tile size and shade reflect how many open reports come from each area — a stand-in for a live ward map.</p>
+        </div>
+        <div class="zone-grid" id="zoneGrid"></div>
+
+        <div class="admin-controls">
+          <input type="text" id="admSearch" placeholder="Search description or location...">
+          <select id="admCatFilter">
+            <option value="all">All categories</option>
+            <option>Pothole</option><option>Water Leak</option><option>Streetlight</option><option>Garbage</option><option>Other</option>
+          </select>
+          <select id="admStatusFilter">
+            <option value="all">All statuses</option>
+            <option>Reported</option><option>In Progress</option><option>Resolved</option>
+          </select>
+        </div>
+        <div id="adminLedger"></div>
+
+        <div class="activity-panel">
+          <h3>Recent admin activity</h3>
+          <div id="activityFeed"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+/* ---------- data model ---------- */
+const categoryWeights = { "Pothole":52, "Water Leak":60, "Streetlight":46, "Garbage":32, "Other":26 };
+const riskKeywords = ["accident","injur","children","child","school","hospital","flood","spark","exposed wire","exposed","fire","collapse","fall","elderly","night","dark","blind"];
+
+let issues = [
+  {id:"WO-0181", category:"Water Leak", description:"Pipe burst flooding the lane outside the primary school gate, kids walking through it every morning.", location:"Perambur, Kamarajar St", upvotes:14, status:"Reported", reporter:"Priya R.", dept:"Water", notes:[]},
+  {id:"WO-0186", category:"Streetlight", description:"Exposed live wire hanging near the bus stop, sparked once already after last night's rain.", location:"Anna Nagar, 4th Ave", upvotes:9, status:"In Progress", reporter:"Mohammed A.", dept:"Electrical", notes:["Team dispatched, ETA 2 days."]},
+  {id:"WO-0179", category:"Pothole", description:"Deep pothole on the main road, two-wheelers keep swerving into oncoming traffic to avoid it.", location:"Velachery Main Rd", upvotes:22, status:"Reported", reporter:"Divya S.", dept:"Roads", notes:[]},
+  {id:"WO-0190", category:"Garbage", description:"Garbage not collected for over a week, bins overflowing onto the footpath.", location:"T Nagar, 5th Cross St", upvotes:6, status:"Reported", reporter:"Karthik V.", dept:"Sanitation", notes:[]},
+  {id:"WO-0172", category:"Streetlight", description:"Streetlight out for a month, the stretch is completely dark and feels unsafe at night.", location:"Adyar, Church Rd", upvotes:11, status:"Resolved", reporter:"Priya R.", dept:"Electrical", notes:["Bulb and fixture replaced."]}
+];
+let ticketCounter = 193;
+let activityLog = [];
+
+let currentUser = null;
+let currentAdmin = null;
+
+/* ---------- scoring ---------- */
+function scoreIssue(category, description){
+  let score = categoryWeights[category] ?? 28;
+  const text = description.toLowerCase();
+  riskKeywords.forEach(k => { if(text.includes(k)) score += 9; });
+  return Math.min(score, 97);
+}
+function priorityOf(score){
+  if(score >= 75) return "critical";
+  if(score >= 55) return "high";
+  if(score >= 35) return "medium";
+  return "low";
+}
+const priorityLabel = {critical:"CRITICAL", high:"HIGH", medium:"MEDIUM", low:"LOW"};
+const priorityClass = {critical:"p-critical", high:"p-high", medium:"p-medium", low:"p-low"};
+function wordSet(str){ return new Set(str.toLowerCase().replace(/[^a-z0-9\s]/g,"").split(/\s+/).filter(w => w.length > 3)); }
+function similarity(a,b){ const A=wordSet(a),B=wordSet(b); if(A.size===0||B.size===0) return 0; let o=0; A.forEach(w=>{if(B.has(w)) o++;}); return o/Math.min(A.size,B.size); }
+function scoredIssues(){
+  return issues.map(iss => {
+    let s = scoreIssue(iss.category, iss.description) + Math.min(iss.upvotes,10)*0.6;
+    s = Math.min(Math.round(s), 98);
+    return {...iss, score:s, priority:priorityOf(s)};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+/* ---------- title screen ---------- */
+document.body.classList.add('locked');
+function enterSite(){
+  const screen = document.getElementById('titleScreen');
+  screen.classList.add('hidden');
+  document.body.classList.remove('locked');
+  setTimeout(() => { screen.style.display = 'none'; }, 460);
+}
+
+/* ---------- view switching ---------- */
+function showView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));
+  const btn = document.querySelector('.nav-link[data-view="'+view+'"]');
+  if(btn) btn.classList.add('active');
+  if(view==='admin') renderAdmin();
+  if(view==='portal' && currentUser) renderPortal();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showSubtab(scope, name){
+  document.querySelectorAll('#view-'+scope+' .subtab').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#view-'+scope+' .subtab[data-sub="'+name+'"]').classList.add('active');
+  document.querySelectorAll('#view-'+scope+' .subpanel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(scope+'-'+name).classList.add('active');
+}
+
+/* ---------- citizen portal ---------- */
+function citizenLogin(){
+  const name = document.getElementById('citizenName').value.trim();
+  if(!name) return;
+  currentUser = name;
+  document.getElementById('portalLogin').style.display = 'none';
+  document.getElementById('portalDashboard').style.display = 'block';
+  document.getElementById('portalName').textContent = name;
+  renderPortal();
+}
+function citizenLogout(){
+  currentUser = null;
+  document.getElementById('portalLogin').style.display = 'block';
+  document.getElementById('portalDashboard').style.display = 'none';
+  document.getElementById('citizenName').value = '';
+}
+
+let activeFilter = 'all';
+
+function renderPortal(){
+  const mine = scoredIssues().filter(i => i.reporter === currentUser);
+  const myUpvotes = mine.reduce((sum,i)=>sum+i.upvotes,0);
+  document.getElementById('statMyReports').textContent = mine.length;
+  document.getElementById('statMyUpvotes').textContent = myUpvotes;
+
+  // leaderboard
+  const points = {};
+  scoredIssues().forEach(i => { points[i.reporter] = (points[i.reporter]||0) + 10 + i.upvotes; });
+  if(!(currentUser in points)) points[currentUser] = 0;
+  const ranked = Object.entries(points).sort((a,b)=>b[1]-a[1]);
+  const myRank = ranked.findIndex(r => r[0] === currentUser) + 1;
+  document.getElementById('statMyRank').textContent = '#' + myRank;
+
+  // badges
+  const badges = [];
+  if(mine.length >= 1) badges.push('First Responder');
+  if(mine.length >= 2) badges.push('Community Watcher');
+  if(myUpvotes >= 10) badges.push('Trusted Reporter');
+  if(myRank === 1) badges.push('Top of the Board');
+  document.getElementById('badgeRow').innerHTML = badges.length
+    ? badges.map(b => '<span class="badge-chip">'+b+'</span>').join('')
+    : '<span class="badge-chip">No badges yet — file your first report</span>';
+
+  // my reports
+  const myLedger = document.getElementById('myLedger');
+  myLedger.innerHTML = mine.length ? '' : '<p style="padding:20px 0;color:#6B6B6B;font-size:0.9rem;">You have not filed anything yet. Use "File a report" above.</p>';
+  mine.forEach(iss => myLedger.appendChild(buildRow(iss, false)));
+
+  // leaderboard list
+  const lb = document.getElementById('leaderboardList');
+  lb.innerHTML = '';
+  ranked.slice(0,8).forEach(([name,pts],idx) => {
+    const row = document.createElement('div');
+    row.className = 'leader-row' + (name===currentUser ? ' me' : '');
+    row.innerHTML = '<span><span class="leader-rank">#'+(idx+1)+'</span>'+name+(name===currentUser?' (you)':'')+'</span><span class="leader-points">'+pts+' pts</span>';
+    lb.appendChild(row);
+  });
+
+  // notifications
+  const notifList = document.getElementById('notifList');
+  const notifs = mine.filter(i => i.status !== 'Reported').map(i => {
+    return i.status === 'Resolved'
+      ? 'Your report ' + i.id + ' ("' + i.description.slice(0,40) + '…") was marked Resolved.'
+      : 'Your report ' + i.id + ' is now In Progress with the ' + i.dept + ' team.';
+  });
+  notifList.innerHTML = notifs.length
+    ? notifs.map(n => '<div class="notif-item">'+n+'</div>').join('')
+    : '<div class="notif-item">No updates yet. You will see status changes here as staff act on your reports.</div>';
+
+  renderBoard();
+}
+
+function buildRow(iss, allowUpvote){
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.style.borderLeftColor = iss.priority === 'critical' ? 'var(--alert-rust)' : iss.priority === 'high' ? 'var(--safety)' : iss.priority === 'medium' ? 'var(--route-blue)' : 'var(--line)';
+  row.innerHTML = `
+    <div class="id">${iss.id}</div>
+    <div class="desc">
+      <h4>${iss.description.length > 80 ? iss.description.slice(0,80) + '…' : iss.description}</h4>
+      <p>📍 ${iss.location} · filed by ${iss.reporter} · ${iss.status}</p>
+      <span class="cat">${iss.category}</span>
+    </div>
+    <div>
+      <span class="priority-badge ${priorityClass[iss.priority]}">${priorityLabel[iss.priority]} · ${iss.score}</span>
+      <div class="score-note">${iss.upvotes} corroborating report${iss.upvotes===1?'':'s'}</div>
+    </div>
+  `;
+  if(allowUpvote){
+    const btn = document.createElement('button');
+    btn.className = 'upvote';
+    btn.textContent = '▲ ' + iss.upvotes;
+    btn.addEventListener('click', () => {
+      const original = issues.find(i => i.id === iss.id);
+      if(original) original.upvotes += 1;
+      renderPortal();
+    });
+    row.appendChild(btn);
+  }
+  return row;
+}
+
+function renderBoard(){
+  const ledger = document.getElementById('ledger');
+  const scored = scoredIssues();
+  const visible = activeFilter === 'all' ? scored : scored.filter(i => i.priority === activeFilter);
+  ledger.innerHTML = '';
+  if(visible.length === 0){
+    ledger.innerHTML = '<p style="padding:24px 4px;color:#6B6B6B;font-size:0.9rem;">No work orders in this band right now.</p>';
+    return;
+  }
+  visible.forEach(iss => ledger.appendChild(buildRow(iss, true)));
+}
+document.getElementById('filters').addEventListener('click', (e) => {
+  if(e.target.tagName !== 'BUTTON') return;
+  activeFilter = e.target.getAttribute('data-f');
+  document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderBoard();
+});
+
+document.getElementById('fileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  document.getElementById('fileLabel').textContent = f ? f.name : 'No file attached';
+});
+
+document.getElementById('reportForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const category = document.getElementById('category').value;
+  const location = document.getElementById('location').value.trim() || 'Location not specified';
+  const description = document.getElementById('description').value.trim();
+  const msg = document.getElementById('formMsg');
+  if(!description){ msg.textContent = 'Add a short description so the model can score it.'; msg.style.color = 'var(--alert-rust)'; return; }
+
+  const sameCat = issues.filter(i => i.category === category);
+  let dupMatch = null, best = 0;
+  sameCat.forEach(i => { const sim = similarity(i.description, description); if(sim > best){ best = sim; dupMatch = i; } });
+
+  if(dupMatch && best > 0.35){
+    dupMatch.upvotes += 1;
+    msg.textContent = 'Matched an existing report (' + dupMatch.id + ') — added as a corroborating vote instead of a new ticket.';
+  } else {
+    const id = 'WO-0' + (ticketCounter++);
+    issues.push({id, category, description, location, upvotes:1, status:'Reported', reporter: currentUser || 'Anonymous', dept:'Unassigned', notes:[]});
+    msg.textContent = 'Filed as ' + id + ' — check "My reports" to track it.';
+  }
+  msg.style.color = 'var(--route-blue)';
+  document.getElementById('description').value = '';
+  document.getElementById('location').value = '';
+  renderPortal();
+});
+
+/* ---------- admin panel ---------- */
+function adminLogin(){
+  const name = document.getElementById('adminName').value.trim();
+  if(!name) return;
+  currentAdmin = { name, dept: document.getElementById('adminDept').value };
+  document.getElementById('adminLoginWrap').style.display = 'none';
+  document.getElementById('adminDashboard').style.display = 'block';
+  document.getElementById('adminNameLabel').textContent = currentAdmin.name;
+  document.getElementById('adminDeptLabel').textContent = currentAdmin.dept + ' dept.';
+  renderAdmin();
+}
+function adminLogout(){
+  currentAdmin = null;
+  document.getElementById('adminLoginWrap').style.display = 'block';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('adminName').value = '';
+}
+function logActivity(text){
+  activityLog.unshift(text);
+  activityLog = activityLog.slice(0,8);
+}
+
+function renderAdmin(){
+  if(!currentAdmin) return;
+  const scored = scoredIssues();
+  const open = scored.filter(i => i.status !== 'Resolved');
+  document.getElementById('admStatOpen').textContent = open.length;
+  document.getElementById('admStatCritical').textContent = open.filter(i=>i.priority==='critical').length;
+  document.getElementById('admStatResolved').textContent = scored.filter(i=>i.status==='Resolved').length;
+
+  // category bars
+  const cats = Object.keys(categoryWeights);
+  const counts = cats.map(c => open.filter(i=>i.category===c).length);
+  const max = Math.max(...counts, 1);
+  document.getElementById('categoryBars').innerHTML = cats.map((c,idx) => `
+    <div class="bar-row">
+      <span class="bar-label">${c}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(counts[idx]/max*100)}%;"></div></div>
+      <span class="bar-count">${counts[idx]}</span>
+    </div>`).join('');
+
+  // zone grid
+  const zones = {};
+  open.forEach(i => { const zone = i.location.split(',')[0].trim(); zones[zone] = (zones[zone]||0)+1; });
+  const zMax = Math.max(...Object.values(zones), 1);
+  document.getElementById('zoneGrid').innerHTML = Object.entries(zones).map(([zone,count]) => {
+    const intensity = count / zMax;
+    const bg = intensity > 0.66 ? 'rgba(193,80,46,0.18)' : intensity > 0.33 ? 'rgba(243,185,0,0.22)' : 'var(--paper-raised)';
+    return `<div class="zone-tile" style="background:${bg};"><b>${count}</b><span>${zone}</span></div>`;
+  }).join('') || '<p style="color:#6B6B6B;font-size:0.9rem;">No open reports right now.</p>';
+
+  renderAdminLedger();
+  document.getElementById('activityFeed').innerHTML = activityLog.length
+    ? activityLog.map(a => '<div class="activity-item">'+a+'</div>').join('')
+    : '<div class="activity-item">No actions taken yet this session.</div>';
+}
+
+function renderAdminLedger(){
+  const search = document.getElementById('admSearch').value.toLowerCase();
+  const catFilter = document.getElementById('admCatFilter').value;
+  const statusFilter = document.getElementById('admStatusFilter').value;
+  let scored = scoredIssues();
+  if(catFilter !== 'all') scored = scored.filter(i => i.category === catFilter);
+  if(statusFilter !== 'all') scored = scored.filter(i => i.status === statusFilter);
+  if(search) scored = scored.filter(i => i.description.toLowerCase().includes(search) || i.location.toLowerCase().includes(search));
+
+  const container = document.getElementById('adminLedger');
+  container.innerHTML = '';
+  if(scored.length === 0){
+    container.innerHTML = '<p style="padding:20px 0;color:#6B6B6B;font-size:0.9rem;">No work orders match these filters.</p>';
+    return;
+  }
+
+  scored.forEach(iss => {
+    const card = document.createElement('div');
+    card.className = 'admin-card';
+    card.style.borderLeftColor = iss.priority === 'critical' ? 'var(--alert-rust)' : iss.priority === 'high' ? 'var(--safety)' : iss.priority === 'medium' ? 'var(--route-blue)' : 'var(--line)';
+    card.innerHTML = `
+      <div class="admin-card-head">
+        <div>
+          <span class="id" style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:#6B6B6B;">${iss.id}</span>
+          <h4>${iss.description}</h4>
+        </div>
+        <span class="priority-badge ${priorityClass[iss.priority]}">${priorityLabel[iss.priority]} · ${iss.score}</span>
+      </div>
+      <div class="admin-card-meta">
+        <div><span>Location</span>${iss.location}</div>
+        <div><span>Category</span>${iss.category}</div>
+        <div><span>Reported by</span>${iss.reporter}</div>
+        <div><span>Corroborations</span>${iss.upvotes}</div>
+      </div>
+      <div class="admin-card-actions">
+        <label style="margin:0;font-size:0.78rem;">Department
+          <select data-role="dept" data-id="${iss.id}" style="margin-left:6px;">
+            ${["Unassigned","Roads","Water","Electrical","Sanitation","General Administration"].map(d => `<option ${d===iss.dept?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </label>
+        <label style="margin:0;font-size:0.78rem;">Status
+          <select data-role="status" data-id="${iss.id}" style="margin-left:6px;">
+            ${["Reported","In Progress","Resolved"].map(s => `<option ${s===iss.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </label>
+        <button class="btn-small" data-role="notebtn" data-id="${iss.id}">Add note</button>
+        <button class="btn-small btn-danger" data-role="delete" data-id="${iss.id}">Delete</button>
+      </div>
+      <div class="note-box" id="notebox-${iss.id}">
+        <textarea placeholder="Internal note for this work order..." id="notetext-${iss.id}"></textarea>
+        <button class="btn-small" style="margin-top:8px;" data-role="savenote" data-id="${iss.id}">Save note</button>
+      </div>
+      <div class="note-list">${iss.notes.map(n => '<div>'+n+'</div>').join('')}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  container.querySelectorAll('[data-role="dept"]').forEach(sel => sel.addEventListener('change', (e) => {
+    const iss = issues.find(i => i.id === e.target.getAttribute('data-id'));
+    if(iss){ iss.dept = e.target.value; logActivity(currentAdmin.name + ' assigned ' + iss.id + ' to ' + iss.dept); }
+    renderAdmin();
+  }));
+  container.querySelectorAll('[data-role="status"]').forEach(sel => sel.addEventListener('change', (e) => {
+    const iss = issues.find(i => i.id === e.target.getAttribute('data-id'));
+    if(iss){ iss.status = e.target.value; logActivity(currentAdmin.name + ' set ' + iss.id + ' to ' + iss.status); }
+    renderAdmin();
+  }));
+  container.querySelectorAll('[data-role="notebtn"]').forEach(btn => btn.addEventListener('click', (e) => {
+    document.getElementById('notebox-' + e.target.getAttribute('data-id')).classList.toggle('open');
+  }));
+  container.querySelectorAll('[data-role="savenote"]').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.getAttribute('data-id');
+    const iss = issues.find(i => i.id === id);
+    const text = document.getElementById('notetext-' + id).value.trim();
+    if(iss && text){ iss.notes.push(text); logActivity(currentAdmin.name + ' added a note to ' + id); }
+    renderAdmin();
+  }));
+  container.querySelectorAll('[data-role="delete"]').forEach(btn => btn.addEventListener('click', (e) => {
+    const id = e.target.getAttribute('data-id');
+    if(confirm('Delete work order ' + id + '? This cannot be undone.')){
+      issues = issues.filter(i => i.id !== id);
+      logActivity(currentAdmin.name + ' deleted ' + id);
+      renderAdmin();
+    }
+  }));
+}
+
+document.getElementById('admSearch').addEventListener('input', renderAdminLedger);
+document.getElementById('admCatFilter').addEventListener('change', renderAdminLedger);
+document.getElementById('admStatusFilter').addEventListener('change', renderAdminLedger);
+
+renderBoard();
+</script>
+
+</body>
+</html>
